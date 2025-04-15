@@ -1,20 +1,29 @@
+// src/utils/stressEvaluator.js
 
-const computeStressLevel = (heartRate, skinResponse, motion) => {
-    let stressIndicators = 0;
-
-    if (heartRate > 90) stressIndicators++;
-    if (skinResponse > 70) stressIndicators++;
-
-    const motionMagnitude = Math.sqrt(
-        motion.x ** 2 + motion.y ** 2 + motion.z ** 2
-    );
-    if (motionMagnitude > 12) stressIndicators++;
-
-    if (stressIndicators >= 2) return 'high';
-    if (stressIndicators === 1) return 'moderate';
+const computeStressScore = ({ hr, hrv, eda, rr }, baselines) => {
+    const z = (val, base) => (val - base.mean) / base.std;
+  
+    const zHR = z(hr, baselines.hr);
+    const zHRV = -z(hrv, baselines.hrv); // lower HRV = higher stress
+    const zEDA = z(eda, baselines.eda);
+    const zRR = z(rr, baselines.rr);
+  
+    return 1.2 * zEDA + 1.0 * zHR + 1.0 * zRR + 1.3 * zHRV;
+  };
+  
+  const mapStressScoreToLevel = (score) => {
+    if (score > 2.0) return 'high';
+    if (score > 0.5) return 'moderate';
     return 'low';
-};
-
-module.exports = {
-    computeStressLevel
-};
+  };
+  
+  const computeStressLevel = (signals, baselines) => {
+    const score = computeStressScore(signals, baselines);
+    return {
+      stressScore: parseFloat(score.toFixed(2)),
+      stressLevel: mapStressScoreToLevel(score)
+    };
+  };
+  
+  module.exports = { computeStressLevel };
+  

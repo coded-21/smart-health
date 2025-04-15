@@ -32,6 +32,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
     super.dispose();
   }
 
+  // Get color based on stress level
+  Color getStressColor(String level) {
+    switch (level.toLowerCase()) {
+      case 'high':
+        return Colors.redAccent;
+      case 'moderate':
+        return Colors.orangeAccent;
+      case 'low':
+      default:
+        return Colors.green;
+    }
+  }
+
+
   Future<void> _fetchBiometricData() async {
     setState(() => _isLoading = true);
     try {
@@ -75,22 +89,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                   const SizedBox(height: 20),
 
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      StressRing(
-                        score: (_data!.cognitiveLoadIndex * 25).clamp(0, 100).toInt(),
-                        label: 'Cognitive Load',
-                      ),
-                      StressRing(
-                        score: _data!.stressLevel.toLowerCase() == 'high'
-                            ? 100
-                            : _data!.stressLevel.toLowerCase() == 'moderate'
-                                ? 60
-                                : 25,
-                        label: 'Stress Level',
-                      ),
-                    ],
+                  // 🧠 Stress Ring (score + label)
+                  StressRing(
+                    score: (_data!.stressScore * 25).clamp(0, 100),
+                    label: 'Stress: ${_data!.stressLevel.toUpperCase()}',
+                    color: getStressColor(_data!.stressLevel),
                   ),
 
 
@@ -134,18 +137,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         value: _data!.rr.toStringAsFixed(1),
                         label: 'Respiration Rate (bpm)',
                         background: const Color(0xFFFFEBEE),
-                      ),
-                      SignalCard(
-                        icon: Icons.visibility,
-                        value: _data!.eyeMovementScore.toStringAsFixed(2),
-                        label: 'Eye Movement',
-                        background: const Color(0xFFEDE7F6),
-                      ),
-                      SignalCard(
-                        icon: Icons.remove_red_eye,
-                        value: _data!.pupilSize.toStringAsFixed(2),
-                        label: 'Pupil Size (mm)',
-                        background: const Color(0xFFFFF3E0),
                       ),
                       
                     ],
