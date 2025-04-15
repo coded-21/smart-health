@@ -37,9 +37,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
     switch (level.toLowerCase()) {
       case 'high':
         return Colors.redAccent;
-      case 'moderate':
+      case 'elevated':
         return Colors.orangeAccent;
+      case 'normal':
+        return Colors.blueAccent;
+      case 'optimal':
+        return Colors.greenAccent;
       case 'low':
+        return Colors.orangeAccent;
       default:
         return Colors.green;
     }
@@ -91,7 +96,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                   // 🧠 Stress Ring (score + label)
                   StressRing(
-                    score: (_data!.stressScore * 25).clamp(0, 100),
+                    score: (_data!.stressScore),
                     label: 'Stress: ${_data!.stressLevel.toUpperCase()}',
                     color: getStressColor(_data!.stressLevel),
                   ),

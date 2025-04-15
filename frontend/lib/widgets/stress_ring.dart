@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 
 class StressRing extends StatelessWidget {
-  final double score; // 0–100 range
+  final int score; // 0–100 range
   final String label;
   final Color color;
 
