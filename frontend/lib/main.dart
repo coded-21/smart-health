@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'models/biometric_data.dart';
+import 'widgets/stress_chart.dart';
+import 'screens/dashboard_screen.dart';
 
 void main() {
   runApp(const SmartHealthApp());
@@ -17,7 +20,7 @@ class SmartHealthApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         useMaterial3: true,
       ),
-      home: const BiometricDataScreen(),
+      home: const DashboardScreen(),
     );
   }
 }
@@ -106,10 +109,29 @@ class _BiometricDataScreenState extends State<BiometricDataScreen> {
                         Colors.green,
                       ),
                       const SizedBox(height: 16),
+                      
                       Text(
                         'Last Updated: ${_biometricData!['timestamp']}',
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
+                      const SizedBox(height: 24),
+                      Text('Stress Trend (Past 10 Readings)', style: Theme.of(context).textTheme.titleMedium),
+                      const SizedBox(height: 8),
+                      FutureBuilder<List<BiometricData>>(
+                        future: fetchStressHistory(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return const Center(child: CircularProgressIndicator());
+                          } else if (snapshot.hasError) {
+                            return Text('Error: ${snapshot.error}');
+                          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                            return const Text('No stress history available');
+                          } else {
+                            return StressChart(data: snapshot.data!);
+                          }
+                        },
+                      ),
+
                     ],
                   ),
                 ),
@@ -147,3 +169,15 @@ class _BiometricDataScreenState extends State<BiometricDataScreen> {
     );
   }
 } 
+
+
+Future<List<BiometricData>> fetchStressHistory() async {
+  final response = await http.get(Uri.parse('http://localhost:3000/api/biometric-data/history'));
+
+  if (response.statusCode == 200) {
+    final List<dynamic> data = json.decode(response.body);
+    return data.map((json) => BiometricData.fromJson(json)).toList();
+  } else {
+    throw Exception('Failed to load stress data');
+  }
+}
