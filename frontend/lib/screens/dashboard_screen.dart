@@ -15,58 +15,34 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  BiometricData? _data;
-  bool _isLoading = false;
+  final ValueNotifier<BiometricData?> _dataNotifier = ValueNotifier<BiometricData?>(null);
   Timer? _timer;
 
   @override
   void initState() {
     super.initState();
     _fetchBiometricData();
-    _timer = Timer.periodic(const Duration(seconds: 20), (_) => _fetchBiometricData());
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) => _fetchBiometricData());
   }
 
   @override
   void dispose() {
     _timer?.cancel();
+    _dataNotifier.dispose();
     super.dispose();
   }
 
-  // Get color based on stress level
-  Color getStressColor(String level) {
-    switch (level.toLowerCase()) {
-      case 'high':
-        return Colors.redAccent;
-      case 'elevated':
-        return Colors.orangeAccent;
-      case 'normal':
-        return Colors.blueAccent;
-      case 'optimal':
-        return Colors.greenAccent;
-      case 'low':
-        return Colors.orangeAccent;
-      default:
-        return Colors.green;
-    }
-  }
-
-
   Future<void> _fetchBiometricData() async {
-    setState(() => _isLoading = true);
     try {
       final response = await http.get(Uri.parse('http://localhost:3000/api/biometric-data'));
       if (response.statusCode == 200) {
-        setState(() {
-          _data = BiometricData.fromJson(json.decode(response.body));
-        });
+        final data = BiometricData.fromJson(json.decode(response.body));
+        _dataNotifier.value = data; // Update the ValueNotifier
       }
     } catch (e) {
       print('Error: $e');
-    } finally {
-      setState(() => _isLoading = false);
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -76,99 +52,96 @@ class _DashboardScreenState extends State<DashboardScreen> {
         title: const Text("Smart Health Dashboard"),
         centerTitle: true,
       ),
-      body: _isLoading || _data == null
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  // Top Date + Time
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(_data!.timestamp.toLocal().toString().substring(0, 10),
-                          style: const TextStyle(fontSize: 18)),
-                      Text(_data!.timestamp.toLocal().toString().substring(11, 16),
-                          style: const TextStyle(fontSize: 18)),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-
-                  // 🧠 Stress Ring (score + label)
-                  StressRing(
-                    score: (_data!.stressScore),
-                    label: 'Stress: ${_data!.stressLevel.toUpperCase()}',
-                    color: getStressColor(_data!.stressLevel),
-                  ),
-
-
-                  const SizedBox(height: 20),
-
-                  // Text(
-                  //   'Cognitive Load: ${_data!.cognitiveLoadLevel.toUpperCase()}',
-                  //   style: Theme.of(context).textTheme.titleMedium,
-                  // ),
-
-                  // Text(
-                  //   'Load Score (CLI): ${_data!.cognitiveLoadIndex.toStringAsFixed(2)}',
-                  //   style: Theme.of(context).textTheme.bodySmall,
-                  // ),
-
-                  // Signal Cards
-                  Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    children: [
-                      SignalCard(
-                        icon: Icons.favorite,
-                        value: '${_data!.heartRate}',
-                        label: 'Heart Rate (BPM)',
-                        background: const Color(0xFFE8F5E9),
-                      ),
-                      SignalCard(
-                        icon: Icons.water_drop,
-                        value: _data!.skinResponse.toStringAsFixed(2),
-                        label: 'Skin Response (µS)',
-                        background: const Color(0xFFFFFDE7),
-                      ),
-                      SignalCard(
-                        icon: Icons.line_axis,
-                        value: _data!.hrv.toStringAsFixed(2),
-                        label: 'HRV (LF/HF)',
-                        background: const Color(0xFFE3F2FD),
-                      ),
-                      SignalCard(
-                        icon: Icons.air,
-                        value: _data!.rr.toStringAsFixed(1),
-                        label: 'Respiration Rate (bpm)',
-                        background: const Color(0xFFFFEBEE),
-                      ),
-                      
-                    ],
-                  ),
-
-
-                  const SizedBox(height: 32),
-
-                  // Alerts
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text("Alerts", style: Theme.of(context).textTheme.titleLarge),
-                  ),
-                  const SizedBox(height: 12),
-                  const AlertCard(
-                    icon: Icons.location_on,
-                    title: "Location Change",
-                    message: "Change location to *new location* in 15 minutes",
-                  ),
-                  const AlertCard(
-                    icon: Icons.warning_amber_rounded,
-                    title: "Elevated Stress Level",
-                    message: "Exercise caution & de-escalate stress",
-                  ),
-                ],
-              ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            // Static UI (doesn't rebuild)
+            const SizedBox(height: 20),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text("Alerts", style: Theme.of(context).textTheme.titleLarge),
             ),
+            const SizedBox(height: 12),
+            const AlertCard(
+              icon: Icons.location_on,
+              title: "Location Change",
+              message: "Change location to *new location* in 15 minutes",
+            ),
+            const AlertCard(
+              icon: Icons.warning_amber_rounded,
+              title: "Elevated Stress Level",
+              message: "Exercise caution & de-escalate stress",
+            ),
+            const SizedBox(height: 32),
+
+            // Dynamic UI (rebuilds only when data changes)
+            ValueListenableBuilder<BiometricData?>(
+              valueListenable: _dataNotifier,
+              builder: (context, data, _) {
+                if (data == null) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                return Column(
+                  children: [
+                    StressRing(
+                      score: data.stressScore,
+                      label: 'Stress: ${data.stressLevel.toUpperCase()}',
+                      color: getStressColor(data.stressLevel),
+                    ),
+                    const SizedBox(height: 20),
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 12,
+                      children: [
+                        SignalCard(
+                          icon: Icons.favorite,
+                          value: '${data.heartRate}',
+                          label: 'Heart Rate (BPM)',
+                          background: const Color(0xFFE8F5E9),
+                        ),
+                        SignalCard(
+                          icon: Icons.water_drop,
+                          value: data.skinResponse.toStringAsFixed(2),
+                          label: 'Skin Response (µS)',
+                          background: const Color(0xFFFFFDE7),
+                        ),
+                        SignalCard(
+                          icon: Icons.line_axis,
+                          value: data.hrv.toStringAsFixed(2),
+                          label: 'HRV (LF/HF)',
+                          background: const Color(0xFFE3F2FD),
+                        ),
+                        SignalCard(
+                          icon: Icons.air,
+                          value: data.rr.toStringAsFixed(1),
+                          label: 'Respiration Rate (bpm)',
+                          background: const Color(0xFFFFEBEE),
+                        ),
+                      ],
+                    ),
+                  ],
+                );
+              },
+            ),
+          ],
+        ),
+      ),
     );
+  }
+
+  Color getStressColor(String level) {
+    switch (level.toLowerCase()) {
+      case 'high':
+        return Colors.redAccent;
+      case 'medium':
+        return Color.lerp(Colors.blue, Colors.red, 0.5)!; // Gradient midpoint
+      case 'low':
+        return Colors.blueAccent;
+      case 'rest':
+        return Colors.blue; // Rest is blue
+      default:
+        return const Color.fromARGB(255, 67, 73, 67); // Default color
+    }
   }
 }

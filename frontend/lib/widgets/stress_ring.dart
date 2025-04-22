@@ -17,15 +17,23 @@ class StressRing extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        CircularPercentIndicator(
-          radius: 80.0,
-          lineWidth: 10.0,
-          percent: (score.clamp(0, 100)) / 100,
-          center: Text('${score.toInt()}',
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-          progressColor: color,
-          backgroundColor: Colors.grey.shade300,
-          animation: true,
+        TweenAnimationBuilder<double>(
+          tween: Tween<double>(begin: 0, end: score.toDouble()),
+          duration: const Duration(seconds: 1), // Smooth animation duration
+          builder: (context, animatedScore, _) {
+            return CircularPercentIndicator(
+              radius: 80.0,
+              lineWidth: 10.0,
+              percent: (animatedScore.clamp(0, 100)) / 100,
+              center: Text(
+                '${animatedScore.toInt()}',
+                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              progressColor: color,
+              backgroundColor: Colors.grey.shade300,
+              animation: false, // Disable internal animation
+            );
+          },
         ),
         const SizedBox(height: 8),
         Text(label, style: const TextStyle(fontSize: 16)),

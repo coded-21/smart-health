@@ -21,11 +21,17 @@ class BiometricData {
     return BiometricData(
       timestamp: DateTime.parse(json['timestamp']),
       heartRate: json['hr'] ?? 0,
-      skinResponse: (json['eda'] ?? 0).toDouble(),
-      hrv: (json['hrv'] ?? 0).toDouble(),
-      rr: (json['rr'] ?? 0).toDouble(),
+      skinResponse: json['eda'] is String
+          ? double.parse(json['eda'])
+          : (json['eda'] ?? 0).toDouble(), // Handle both String and numeric cases
+      hrv: json['hrv'] is String
+          ? double.parse(json['hrv'])
+          : (json['hrv'] ?? 0).toDouble(), // Handle both String and numeric cases
+      rr: json['rr'] is String
+          ? double.parse(json['rr'])
+          : (json['rr'] ?? 0).toDouble(), // Handle both String and numeric cases
       stressLevel: json['stressLevel'] ?? 'low',
-      stressScore: json['stressScore'] ?? 0, 
+      stressScore: json['stressScore'] ?? 0,
     );
   }
 }

@@ -61,8 +61,8 @@ class _BiometricDataScreenState extends State<BiometricDataScreen> {
   void initState() {
     super.initState();
     _fetchBiometricData();
-    // Refresh data every 5 seconds
-    Future.delayed(const Duration(seconds: 5), _fetchBiometricData);
+    // Refresh data every 1 seconds
+    Future.delayed(const Duration(seconds: 1), _fetchBiometricData);
   }
 
   @override
