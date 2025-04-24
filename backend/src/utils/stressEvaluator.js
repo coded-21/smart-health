@@ -79,8 +79,9 @@ function computeStressLevel(hr, eda, hrv, rr) {
   // New stress level thresholds: 0-25 low, 25-50 medium, 50-75 high, 75-100 very high
   let level;
   if (percentage >= 75) level = 'high';
-  else if (percentage >= 50) level = 'medium';
-  else if (percentage >= 25) level = 'low';
+  else if (percentage >= 50) level = 'elevated';
+  else if (percentage >= 30) level = 'normal';
+  else if (percentage >= 10) level = 'optimal';
   else level = 'rest';
 
   return { level, score: percentage };

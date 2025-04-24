@@ -55,15 +55,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
         title: const Text("Smart Health Dashboard"),
         centerTitle: true,
         actions: [
-          IconButton(
-            icon: Icon(_showSquadView ? Icons.dashboard : Icons.group),
-            tooltip: 'Toggle Squad View',
-            onPressed: () {
-              setState(() {
-                _showSquadView = !_showSquadView;
-              });
-            },
-          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 80.0), // ⬅️ reduce this to pull left
+            child: IconButton(
+              icon: Icon(_showSquadView ? Icons.dashboard : Icons.group),
+              tooltip: 'Toggle Squad View',
+              onPressed: () {
+                setState(() {
+                  _showSquadView = !_showSquadView;
+                });
+              },
+            ),
+          )
         ],
       ),
 
@@ -150,12 +153,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
     switch (level.toLowerCase()) {
       case 'high':
         return Colors.redAccent;
-      case 'medium':
-        return Color.lerp(Colors.blue, Colors.red, 0.5)!; // Gradient midpoint
-      case 'low':
+      case 'elevated':
+        return Colors.orangeAccent;
+      case 'normal':
         return Colors.blueAccent;
+      case 'optimal':
+        return Colors.greenAccent;
       case 'rest':
-        return Colors.blue; // Rest is blue
+        return Colors.yellowAccent;
       default:
         return const Color.fromARGB(255, 67, 73, 67); // Default color
     }

@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'squad_member_dashboard.dart';
 
 class SquadMember {
   final String name;
@@ -93,37 +94,47 @@ class _SquadViewState extends State<SquadView> {
 
 
   Widget _buildCard(SquadMember m) {
-  return Card(
-    elevation: 2,
-    color: Colors.white,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(12),
-      side: const BorderSide(color: Colors.black, width: 1), // ⬅Black border
-    ),
-    child: Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          CircleAvatar(
-            radius: 20, // smaller avatar
-            backgroundColor: m.color,
-            child: Text(
-              m.initials,
-              style: const TextStyle(fontSize: 14, color: Colors.white),
+    return GestureDetector(
+    onTap: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SquadMemberDashboard(member: m),
+        ),
+      );
+    },
+    child: Card(
+      elevation: 2,
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: Colors.black, width: 1), // ⬅Black border
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircleAvatar(
+              radius: 20, // smaller avatar
+              backgroundColor: m.color,
+              child: Text(
+                m.initials,
+                style: const TextStyle(fontSize: 14, color: Colors.white),
+              ),
             ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            m.name,
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-            textAlign: TextAlign.center,
-          ),
-          Text(
-            '${m.stressLevel}% Stress',
-            style: const TextStyle(fontSize: 12),
-          ),
-        ],
+            const SizedBox(height: 6),
+            Text(
+              m.name,
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+              textAlign: TextAlign.center,
+            ),
+            Text(
+              '${m.stressLevel}% Stress',
+              style: const TextStyle(fontSize: 12),
+            ),
+          ],
+        ),
       ),
     ),
   );
