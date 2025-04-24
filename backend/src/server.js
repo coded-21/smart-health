@@ -44,10 +44,18 @@ app.get('/api/biometric-data', (req, res) => {
   if (!generationInterval) {
     startDataGeneration();
   }
+  const user = req.query.user || 'default';
 
-  const latestReading = dataStore.readings.length > 0
-    ? dataStore.readings[dataStore.readings.length - 1]
-    : generateBiometricData();
+  let latestReading;
+  if (user === 'johnson') {
+    // Generate separate data just for Johnson
+    latestReading = require('./utils/mockDataGenerator').generateBiometricData('johnson');
+  } else {
+    // Use shared pool for default data
+    latestReading = dataStore.readings.length > 0
+      ? dataStore.readings[dataStore.readings.length - 1]
+      : generateBiometricData();
+  }
 
   // Ensure heartRate is an integer
   latestReading.hr = Math.round(latestReading.hr);
@@ -60,6 +68,7 @@ app.get('/api/biometric-data/history', (req, res) => {
     if (!generationInterval) {
       startDataGeneration();
     }
+    
     
     // Format the readings to match Flutter app expectations
     const formattedReadings = dataStore.readings.map(reading => ({

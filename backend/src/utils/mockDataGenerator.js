@@ -29,7 +29,27 @@ const BASELINE = {
   hrv: 1.5   // HRV between 0.5-2.8 (never reaching 3.0)
 };
 
-const generateBiometricData = () => {
+const generateBiometricData = (user = 'default') => {
+  if (user === 'johnson') {
+    // Generate hardcoded-style readings just for Johnson
+    const hr = Math.floor(Math.random() * 10) + 78;
+    const eda = 3.8 + Math.random() * 2;
+    const hrv = 1.2 + Math.random() * 1.2;
+    const rr = 15 + Math.random() * 2;
+
+    const stressLevel = computeStressLevel(hr, eda, hrv, rr);
+
+    return {
+      timestamp: new Date().toISOString(),
+      hr: hr,
+      eda: eda.toFixed(2),
+      hrv: hrv.toFixed(2),
+      rr: rr.toFixed(1),
+      stressLevel: stressLevel.level,
+      stressScore: stressLevel.score
+    };
+  }
+
   const timestamp = new Date();
   
   // Create a new reading with smoothing if previous data exists
