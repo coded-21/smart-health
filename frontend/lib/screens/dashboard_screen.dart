@@ -7,6 +7,7 @@ import '../widgets/stress_ring.dart';
 import '../widgets/signal_card.dart';
 import '../widgets/alert_card.dart';
 import '../screens/squad_view.dart'; 
+import '../screens/weapon_indicator.dart'; 
 
 bool _showSquadView = false;
 
@@ -67,6 +68,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
               },
             ),
           )
+          IconButton(
+            icon: Icon(_showSquadView ? Icons.dashboard : Icons.group),
+            tooltip: 'Toggle Squad View',
+            onPressed: () {
+              setState(() {
+                _showSquadView = !_showSquadView;
+              });
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.square),
+            tooltip: 'View Weapon Indicator',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => WeaponIndicator(color: getStressColor(_dataNotifier.value?.stressLevel ?? 'low')),
+                ),
+              );
+            },
+          ),
         ],
       ),
 
@@ -108,7 +130,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       label: 'Stress: ${data.stressLevel.toUpperCase()}',
                       color: getStressColor(data.stressLevel),
                     ),
-                    const SizedBox(height: 20),
                     Wrap(
                       spacing: 12,
                       runSpacing: 12,
@@ -160,9 +181,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       case 'optimal':
         return Colors.greenAccent;
       case 'rest':
-        return Colors.yellowAccent;
+        return Colors.yellowAccent
       default:
-        return const Color.fromARGB(255, 67, 73, 67); // Default color
+        return const Color.fromARGB(255, 60, 60, 60);
     }
   }
 }
