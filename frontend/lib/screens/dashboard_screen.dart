@@ -6,6 +6,9 @@ import '../models/biometric_data.dart';
 import '../widgets/stress_ring.dart';
 import '../widgets/signal_card.dart';
 import '../widgets/alert_card.dart';
+import '../screens/squad_view.dart'; 
+
+bool _showSquadView = false;
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -51,11 +54,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
       appBar: AppBar(
         title: const Text("Smart Health Dashboard"),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: Icon(_showSquadView ? Icons.dashboard : Icons.group),
+            tooltip: 'Toggle Squad View',
+            onPressed: () {
+              setState(() {
+                _showSquadView = !_showSquadView;
+              });
+            },
+          ),
+        ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
+
+      body: _showSquadView
+        ? SquadView() // new widget you'll create
+        : SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [ 
+            
             // Static UI (doesn't rebuild)
             const SizedBox(height: 20),
             Align(
@@ -63,17 +81,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: Text("Alerts", style: Theme.of(context).textTheme.titleLarge),
             ),
             const SizedBox(height: 12),
-            const AlertCard(
-              icon: Icons.location_on,
-              title: "Location Change",
-              message: "Change location to *new location* in 15 minutes",
-            ),
-            const AlertCard(
-              icon: Icons.warning_amber_rounded,
-              title: "Elevated Stress Level",
-              message: "Exercise caution & de-escalate stress",
-            ),
-            const SizedBox(height: 32),
+            
 
             // Dynamic UI (rebuilds only when data changes)
             ValueListenableBuilder<BiometricData?>(
@@ -84,6 +92,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 }
                 return Column(
                   children: [
+                    if (data.stressLevel.toLowerCase() == 'high') ...[
+                      AlertCard(
+                        icon: Icons.warning_amber_rounded,
+                        title: "Elevated Stress Level",
+                        message: "Exercise caution & de-escalate stress",
+                      ),
+                      const SizedBox(height: 32),
+                    ],
                     StressRing(
                       score: data.stressScore,
                       label: 'Stress: ${data.stressLevel.toUpperCase()}',

@@ -22,13 +22,13 @@ function startDataGeneration() {
     console.log('Starting background data generation every 1 second');
     // Generate initial data point
     const initialData = generateBiometricData();
-    console.log('Initial data generated:', initialData); // Debug log
+    // console.log('Initial data generated:', initialData); // Debug log
     dataStore.readings.push(initialData);
     
     // Set up interval for continuous data generation
     generationInterval = setInterval(() => {
       const data = generateBiometricData();
-      console.log('Generated data:', data); // Debug log
+      // console.log('Generated data:', data); // Debug log
       dataStore.readings.push(data);
       
       // Keep only the last 100 readings
